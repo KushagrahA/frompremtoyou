@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Be My Valentine ❤️</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --accent:#ff4d6d;
+  --cursor-x:50%;
+  --cursor-y:50%;
+}
+
+* {margin:0;padding:0;box-sizing:border-box;}
+
+html, body {
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  font-family:'Inter',sans-serif;
+  background:#ff8fa3;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+#fluid-canvas {
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+}
+
+#bg-shader {
+  position:fixed;
+  inset:0;
+  z-index:1;
+  background: radial-gradient(circle at var(--cursor-x) var(--cursor-y),
+    #ffb3c1 0%,
+    #ff8fa3 40%,
+    #fb6f92 100%);
+}
+
+.glass-surface {
+  position:relative;
+  z-index:10;
+  width:450px;
+  padding:4rem;
+  text-align:center;
+  border-radius:40px;
+  backdrop-filter: blur(25px);
+  background: rgba(255,255,255,0.15);
+  border:1px solid rgba(255,255,255,0.3);
+  box-shadow:0 25px 50px rgba(0,0,0,0.2);
+  animation: breathe 4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%,100% { transform:scale(1); }
+  50% { transform:scale(1.03); }
+}
+
+.face-box {
+  width:130px;
+  height:130px;
+  background:white;
+  border-radius:50%;
+  margin:0 auto 2.5rem;
+  position:relative;
+  box-shadow:0 10px 30px rgba(255,77,109,0.3);
+  animation: floatFace 3s ease-in-out infinite;
+}
+
+@keyframes floatFace {
+  0%,100% { transform:translateY(0); }
+  50% { transform:translateY(-6px); }
+}
+
+.eyes {
+  display:flex;
+  justify-content:center;
+  gap:25px;
+  padding-top:42px;
+}
+
+.eye {
+  width:18px;
+  height:18px;
+  background:#333;
+  border-radius:50%;
+  position:relative;
+  overflow:hidden;
+  animation: blink 5s infinite;
+}
+
+@keyframes blink {
+  0%,95%,100% { height:18px; }
+  97% { height:2px; }
+}
+
+.pupil {
+  width:7px;
+  height:7px;
+  background:white;
+  border-radius:50%;
+  position:absolute;
+  top:3px;
+  left:3px;
+  transition:transform 0.1s linear;
+}
+
+.mouth {
+  width:45px;
+  height:12px;
+  border-bottom:5px solid #333;
+  border-radius:50%;
+  margin:14px auto;
+  transition:0.4s ease;
+}
+
+.face-box:hover .mouth {
+  width:26px;
+  height:26px;
+  background:red;
+  border:none;
+  clip-path: polygon(50% 80%, 100% 30%, 80% 0, 50% 20%, 20% 0, 0 30%);
+}
+
+.blush {
+  position:absolute;
+  width:22px;
+  height:12px;
+  background:rgba(255,77,109,0.3);
+  border-radius:50%;
+  top:72px;
+  animation: blushPulse 2s infinite;
+}
+
+.blush.left { left:15px; }
+.blush.right { right:15px; }
+
+@keyframes blushPulse {
+  0%,100%{opacity:0.3;}
+  50%{opacity:0.7;}
+}
+
+.heart {
+  position:absolute;
+  font-size:20px;
+  animation: floatHeart 4s linear forwards;
+  pointer-events:none;
+}
+
+@keyframes floatHeart {
+  from {transform:translateY(0) scale(0.5);opacity:1;}
+  to {transform:translateY(-150px) scale(1.5);opacity:0;}
+}
+
+h1 {
+  font-family:'Dancing Script',cursive;
+  color:white;
+  font-size:3.2rem;
+  margin-bottom:2rem;
+}
+
+.controls {position:relative;height:80px;}
+
+button {
+  padding:16px 50px;
+  border-radius:20px;
+  border:none;
+  font-size:1.2rem;
+  font-weight:700;
+  cursor:pointer;
+  transition:0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+#yesBtn {
+  background:white;
+  color:var(--accent);
+}
+
+#yesBtn:hover {transform:scale(1.25) rotate(3deg);}
+
+#noBtn {
+  background:rgba(255,255,255,0.2);
+  color:white;
+  border:1px solid rgba(255,255,255,0.4);
+  position:absolute;
+  left:60%;
+}
+
+#success-layer {
+  position:fixed;
+  inset:0;
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:50;
+}
+
+.panda {
+  font-size:100px;
+  animation: jump 0.6s infinite alternate;
+}
+
+@keyframes jump {
+  from { transform:translateY(0); }
+  to { transform:translateY(-30px); }
+}
+
+/* FULL PAGE HEART RAIN */
+#heart-rain {
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:100;
+}
+.rain-heart {
+  position:absolute;
+  font-size:30px;
+  animation: rain 3s linear forwards;
+}
+@keyframes rain {
+  from {transform:translateY(-50px) scale(0.5); opacity:1;}
+  to {transform:translateY(110vh) scale(1.5); opacity:0;}
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="fluid-canvas"></canvas>
+<div id="bg-shader"></div>
+
+<div class="glass-surface" id="main-card">
+  <div class="face-box" id="face">
+    <div class="blush left"></div>
+    <div class="blush right"></div>
+    <div class="eyes">
+      <div class="eye"><div class="pupil"></div></div>
+      <div class="eye"><div class="pupil"></div></div>
+    </div>
+    <div class="mouth"></div>
+  </div>
+
+  <h1>Be my Valentine?</h1>
+
+  <div class="controls">
+    <button id="yesBtn">Yes</button>
+    <button id="noBtn">No</button>
+  </div>
+</div>
+
+<div id="success-layer">
+  <div style="display:flex;gap:20px;">
+    <div class="panda">🐼</div>
+    <div class="panda">🐼</div>
+  </div>
+  <h1>I knew you'd say yes! ❤️</h1>
+</div>
+
+<div id="heart-rain"></div>
+
+<script>
+// FACE FOLLOW
+document.addEventListener("mousemove", e=>{
+  document.documentElement.style.setProperty("--cursor-x", e.clientX+"px");
+  document.documentElement.style.setProperty("--cursor-y", e.clientY+"px");
+  const face=document.getElementById("face");
+  const rect=face.getBoundingClientRect();
+  const cx=rect.left+rect.width/2;
+  const cy=rect.top+rect.height/2;
+  document.querySelectorAll(".pupil").forEach(p=>{
+    const angle=Math.atan2(e.clientY-cy,e.clientX-cx);
+    p.style.transform=`translate(${Math.cos(angle)*6}px,${Math.sin(angle)*6}px)`;
+  });
+});
+
+// NO BUTTON RUN
+const noBtn=document.getElementById("noBtn");
+noBtn.onmouseover=()=>{
+  noBtn.style.left=Math.random()*300+"px";
+  noBtn.style.top=Math.random()*120+"px";
+};
+
+// HEART RAIN FUNCTION
+function startHeartRain(){
+  const container=document.getElementById("heart-rain");
+  const interval=setInterval(()=>{
+    for(let i=0;i<5;i++){
+      const h=document.createElement("div");
+      h.className="rain-heart";
+      h.textContent="❤️";
+      h.style.left=Math.random()*100+"vw";
+      h.style.fontSize=(20+Math.random()*30)+"px";
+      container.appendChild(h);
+      setTimeout(()=>h.remove(),3000);
+    }
+  },200);
+  setTimeout(()=>clearInterval(interval),4000);
+}
+
+// YES BUTTON
+document.getElementById("yesBtn").onclick=()=>{
+  document.getElementById("main-card").style.display="none";
+  document.getElementById("success-layer").style.display="flex";
+  startHeartRain();
+};
+
+// BASIC WEBGL FLUID BACKGROUND (SAFE)
+const canvas=document.getElementById("fluid-canvas");
+const gl=canvas.getContext("webgl",{alpha:true});
+if(!gl){alert("WebGL not supported");}
+gl.getExtension("OES_texture_float");
+gl.getExtension("OES_texture_float_linear");
+
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+window.onresize=()=>{canvas.width=innerWidth;canvas.height=innerHeight;};
+
+// Simple animated gradient (lightweight safe)
+function draw(){
+  gl.clearColor(Math.random()*0.1,0.1,0.1,0.02);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>
